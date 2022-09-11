@@ -1,0 +1,7 @@
+**/.vs/
+**/PublishProfiles
+**/ServiceDependencies
+
+**/bin
+**/obj
+**/*.keystore

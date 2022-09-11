@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vms="clr-namespace:AlekTeams.ViewModels"
+             xmlns:converters="clr-namespace:AlekTeams.Converters"
+             xmlns:services="clr-namespace:AlekTeams.Services"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             x:Class="AlekTeams.Pages.ChatPage"
+             Title="Alek Teams">
+    <ContentPage.BindingContext>
+        <vms:ChatPageViewModel/>
+    </ContentPage.BindingContext>
+    <ContentPage.Resources>
+        <converters:MessageToGridColumnDefinitionsConverter x:Key="MessageToGridColumnDefinitionsConverter">
+            <converters:MessageToGridColumnDefinitionsConverter.CurrentUserColumns>
+                <ColumnDefinitionCollection>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="4*"/>
+                </ColumnDefinitionCollection>
+            </converters:MessageToGridColumnDefinitionsConverter.CurrentUserColumns>
+            <converters:MessageToGridColumnDefinitionsConverter.OtherUserColumns>
+                <ColumnDefinitionCollection>
+                    <ColumnDefinition Width="60"/>
+                    <ColumnDefinition Width="4*"/>
+                    <ColumnDefinition Width="*"/>                    
+                </ColumnDefinitionCollection>
+            </converters:MessageToGridColumnDefinitionsConverter.OtherUserColumns>
+        </converters:MessageToGridColumnDefinitionsConverter>
+        <converters:MessageToBackgroundColorConverter 
+            CurrentUserColor="DarkSlateBlue"
+            OtherUserColor="DimGray"
+            x:Key="MessageToBackgroundColorConverter"/>
+        <converters:TextToCapitalsConverter x:Key="TextToCapitalsConverter"/>
+        <toolkit:CompareConverter
+            x:Key="SenderToAvatarVisibility"
+            ComparisonOperator="Equal"
+            ComparingValue="{x:Static services:MessagesService.CurrentUser}"
+            TrueObject="False"
+            FalseObject="True" />
+        <toolkit:IsStringNotNullOrWhiteSpaceConverter  x:Key="IsStringNotNullOrWhiteSpaceConverter"/>
+    </ContentPage.Resources>
+
+    <Grid RowSpacing="16" Padding="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="20"/>
+            <RowDefinition Height="auto"/>
+        </Grid.RowDefinitions>
+        <ScrollView VerticalOptions="End" x:Name="MessagesView">
+            <CollectionView ItemsSource="{Binding Messages}" >
+                <CollectionView.ItemsLayout>
+                    <LinearItemsLayout Orientation="Vertical" ItemSpacing="8"/>
+                </CollectionView.ItemsLayout>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid ColumnSpacing="8" ColumnDefinitions="{Binding From, Converter={StaticResource MessageToGridColumnDefinitionsConverter}}">
+                            <toolkit:AvatarView Text="{Binding From, Converter={StaticResource TextToCapitalsConverter}}" 
+                                                BorderWidth="0" 
+                                                BackgroundColor="LightGray" 
+                                                TextColor="Black" 
+                                                IsVisible="{Binding From, Converter={StaticResource SenderToAvatarVisibility} }"
+                                                VerticalOptions="Start"/>
+                            <Border Grid.Column="1" StrokeThickness="0" BackgroundColor="{Binding From, Converter={StaticResource MessageToBackgroundColorConverter}}" Padding="16, 8">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="6"/>
+                                </Border.StrokeShape>
+                                <Label Text="{Binding Content}"/>
+                            </Border>
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </ScrollView>
+        <Label Grid.Row="1" Text="{Binding TyperName, StringFormat='{0} is typing...'}" IsVisible="{Binding TyperName, Converter={StaticResource IsStringNotNullOrWhiteSpaceConverter }}"/>
+        <Grid Grid.Row="2" ColumnSpacing="30">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="auto"/>
+            </Grid.ColumnDefinitions>
+            <Editor Text="{Binding MessageToSend}" HeightRequest="90" Placeholder="Type a message here...">
+                <Editor.Behaviors>
+                    <toolkit:EventToCommandBehavior EventName="TextChanged" Command="{Binding NotifyTypingCommand}"/>
+                </Editor.Behaviors>
+            </Editor>
+            <Button x:Name="SendButton" Grid.Column="1" Text="SEND" VerticalOptions="Center" Command="{Binding SendMessageCommand}"/>
+        </Grid>
+    </Grid>
+
+</ContentPage>
