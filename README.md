@@ -1,4 +1,4 @@
-# alek-teams
+# Alek Teams .NET MAUI
 This is a demo repo to create your own, teams-like chat app.
 Current features:
 * Group chat for everyone who connects to the app
